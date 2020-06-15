@@ -10,10 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
     "@babel/preset-flow": "^7.10.1",
-    "flow-bin": "^0.127.0",
-    "lodash": "^4.17.15"
+    "flow-bin": "^0.127.0"
   }
 }

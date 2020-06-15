@@ -18,3 +18,11 @@ declare class URL {
   }
   
 declare function userlogin(a: number): string;
+
+declare module "lodash" {
+  // Declares a named "concatPath" export
+  // declare export function foreach(dirA: string, dirB: string): string;
+  declare module.exports: {
+      foreach(dirA: string, dirB: string): string;
+    };
+}

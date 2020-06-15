@@ -337,5 +337,18 @@ babel_loose_array_spread =true
 [declarations]
 ```
 
+## flow-typed
+
+
+
+
+### 采坑记录
+-  TypeError: Invalid Version: undefined   
+https://github.com/flow-typed/flow-typed/issues/3809
+-  ERROR: Unable to rebase the local cache repo. Error checking out the `master` branch of the following repo:
+https://github.com/flow-typed/flow-typed/issues/2954
+
+
+
 
 
