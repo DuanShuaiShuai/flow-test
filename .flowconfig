@@ -1,0 +1,13 @@
+[ignore]
+.*/node_modules/.*
+[include]
+
+[libs]
+./flow-typed
+[lints]
+sketchy-null=error
+untyped-type-import=off
+[options]
+all=true
+include_warnings=false
+[strict]

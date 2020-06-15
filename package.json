@@ -1,0 +1,19 @@
+{
+  "name": "07.flow",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src/ -d lib/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.10.1",
+    "@babel/core": "^7.10.2",
+    "@babel/preset-flow": "^7.10.1",
+    "flow-bin": "^0.127.0",
+    "lodash": "^4.17.15"
+  }
+}
