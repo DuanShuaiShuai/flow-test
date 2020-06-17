@@ -8,8 +8,13 @@ Flow是一个由Facebook出品的JavaScript静态类型检查工具，它与Type
 - 大量减少由于使用第三方库不当引起的类型错误
 - 可以在CI系统中集成
 - 工具链配置成本比较低，只需要很少的工作量即可达到这些效果
+- 可以一个文件一个文件地迁移，不需要一竿子全弄了。
+- Babel 和 ESLint 都有对应的 Flow 插件以支持语法，可以完全沿用现有的构建配置；
+- 更贴近 ES 规范。除了 Flow 的类型声明之外，其他都是标准的 ES。万一哪天不想用 Flow 了，用 babel-plugin-transform-flow-strip-types 转一下，就得到符合规范的 ES。
+- 在需要的地方保留 ES 的灵活性，并且对于生成的代码尺寸有更好的控制力 (rollup / 自定义 babel 插件）
+- Flow 只做类型检查，你只需要在你需要的地方加上声明就可以。而 Typescript 和 babel 有功能上的重叠，可能对你的代码有侵入，要用就要用全套，但 Typescript 有 vs code 这个红利，如果完全用 ts 开发可以拥有近似静态语言的开发体验。
 
-
+- Flow与Ts讨论：https://www.zhihu.com/question/46397274/answer/101193678
 
 ## 安装flow
 ```js
@@ -23,8 +28,36 @@ npm i  --dev @babel/core @babel/cli @babel/preset-flow   flow-bin
 flow init 
 ```
 ## 用法
+- 命令列表
+```js
+flow --help
+// Usage: flow [COMMAND]
+
+// Valid values for COMMAND:
+//   ast             输出 AST
+//   autocomplete    查询自动提示完成的信息
+//   check           作完整检测并且输出接过
+//   check-contents  对标准输入的内容作检测
+//   coverage        显示一个文件的覆盖率
+//   find-module     解析模块，返回对应文件信息
+//   get-def         获取变量或者属性的定义位置
+//   get-importers   列出通过 import 引用了指定模块的所有模块
+//   get-imports     列出一个或多个模块中，所有 import 的模块
+//   init            初始化一个目录为 flow 根目录
+//   port            Shows ported type annotations for given files
+//   search          Searches a pattern
+//   server          启动 flow 前台服务
+//   start           启动 flow 后台服务
+//   status          (默认) 访问 flow 服务，显示当前错误情况
+//   stop            停止 flow 后台服务
+//   suggest         对指定的文件，给出建议的类型注解
+//   type-at-pos     显示指定的文件的某个位置的类型
+//   version   
+
+
+```
 - 初始化项目
-```bash 
+```bash
 flow init
 ```
 在项目的顶层运行此命令以创建一个名为的空文件.flowconfig。从最基本的层面.flowconfig上讲，它告诉Flow后台进程从哪里开始检查Flow代码中的错误的根源。
@@ -33,10 +66,20 @@ flow init
 
 Flow的核心优势在于它能够快速检查代码中的错误。为Flow启用项目后，就可以开始允许Flow逐步检查代码的过程。
 ```js 
+//最基本的命令 但是不是最高效的
+flow check 
+这个命令会让 flow 每次都把项目下所有文件检查一遍
+对于大型项目来说，你应该不希望每次改文件都让 Flow 立刻检查所有文件。 Flow 使用 c/s 架构设计，于是你就可以先开启一个 Flow 后台服务， 当你文件改变时，Flow 就在后台默默地检测。命令很简单
+
 //开启(默认) 月 flow是等价的
-flow status 
+flow status Or  flow
+使用带后台服务的 flow 命令，避免每次修改都触发项目所有文件的检查，节省时间， 提高工作效率 - 更不用说与IDE插件和其他工具更好地整合。
 //关闭
 flow stop 
+//强制 Flow 检测所有的文件，不管文件有没有 @flow 注释，带上 --all 参数就行了
+//不过还是要慎用呀，特别是在一个大项目，或者是项目中有很多第三方库的。 检测器会找到巨多错误，然后你就崩溃吧。
+//想在老项目中立刻用 Flow 检测然后改 bug，靠谱一点的话，还是 一个个文件弄吧。
+flow check --all
 ```
 - 代码准备
 
@@ -324,24 +367,55 @@ sketchy-null=off
 
 //  优先级  文件中注释> cli --lints  > .flowconfig
 [options]
-all = true 
+// log.file (string): 日志文件路径 (默认为 /tmp/flow/<根目录转义>.log)
 babel_loose_array_spread =true
 // 设置此选项可true检查数组扩展语法仅用于数组，而不用于任意可迭代对象（例如Map或Set）。如果您在宽松模式下使用Babel转换代码，这会在运行时做出不符合规范的假设，则这很有用。
 // const set = new Set();
 // const values = [...set];
-[strict]
-
 [version]
-// 0.22.0
+// 0.22.0  其他版本的会报错
 // 指定flow的版本
-[declarations]
 ```
 
-## flow-typed
+## flow-typed （第三方库引入）
+
+- 存在对应的 libdef
+```js
+// .flowconfig 配置[libs] ./flow-typed
+
+//全局安装
+npm i flow-typed -g 
+//项目中安装某一个三方库的flow-type
+flow-typed install rxjs@5.0.x
+
+//全部安装 根据package.json 选择安装  安装最后会提示那些没有对应的libs,那对应的类型注释就是any,相当于没有注释
+
+//• @babel/core@^7.9.0
+//    └> flow-typed\npm\@babel\core_vx.x.x.js
+//!! No flow@v0.122.0-compatible libdefs found in flow-typed for the above untyped dependencies !!
+flow-typed install
 
 
+//根据package.json对应的更新libdef
+flow-typed updade
+```
 
-
+- 第三方库没有对用的libdef
+```js
+//esmodule
+declare module "some-es-module" {
+  // Declares a named "concatPath" export
+  declare export function concatPath(dirA: string, dirB: string): string;
+}
+//cmd
+declare module "some-commonjs-module" {
+  // The export of this module is an object with a "concatPath" method
+  declare module.exports: {
+    concatPath(dirA: string, dirB: string): string;
+  };
+}
+```
+参考链接:https://flow.org/en/docs/libdefs/creation/
 ### 采坑记录
 -  TypeError: Invalid Version: undefined   
 https://github.com/flow-typed/flow-typed/issues/3809
